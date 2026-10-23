@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Weather App</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="container mt-5">
+    <h2 class="text-center">Weather App</h2>
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <input type="text" id="cityInput" class="form-control mb-2" placeholder="Enter City">
+            <button onclick="getWeather()" class="btn btn-primary w-100">Get Weather</button>
+            <div id="weatherResult" class="mt-3 fs-5"></div>
+            <canvas id="weatherChart" class="mt-3"></canvas>
+        </div>
+    </div>
+
+    <script>
+        const apiKey = "d2db27d78dbc261f005fe6fae43008ab";
+        let chart;
+
+        const getWeather = async () => {
+            const city = document.getElementById("cityInput").value;
+            const resultDiv = document.getElementById("weatherResult");
+            if (!city) return alert("Please enter a city name");
+
+            try {
+                const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${apiKey}`);
+                const data = await res.json();
+
+                if (data.cod === 200) {
+                    const { temp, temp_min, temp_max } = data.main;
+                    resultDiv.innerHTML = `Weather: ${data.weather[0].description}<br>Temp: ${temp}°C`;
+                    renderChart(temp, temp_min, temp_max);
+                } else {
+                    resultDiv.innerHTML = `Error: ${data.message}`;
+                }
+            } catch (err) {
+                resultDiv.innerHTML = `Error fetching data`;
+            }
+        };
+
+        const renderChart = (temp, min, max) => {
+            const ctx = document.getElementById('weatherChart').getContext('2d');
+            if (chart) chart.destroy();
+            
+            chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Current Temp', 'Min Temp', 'Max Temp'],
+                    datasets: [{
+                        label: 'Temperature (°C)',
+                        data: [temp, min, max],
+                        backgroundColor: ['#0d6efd', '#0dcaf0', '#dc3545']
+                    }]
+                }
+            });
+        };
+    </script>
+</body>
+</html>
